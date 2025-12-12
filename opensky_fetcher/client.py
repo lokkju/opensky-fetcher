@@ -141,19 +141,74 @@ class OpenSkyClient:
         logger.debug(f"Fetching departures for {airport} (begin={begin}, end={end})")
         response = await self._rate_limited_request(client, url + params)
         data = response.json()
-        logger.debug(f"Retrieved {len(data)} flights for {airport}")
+        logger.debug(f"Retrieved {len(data)} departure flights for {airport}")
+        return data
+
+    async def get_destinations(
+        self,
+        client: httpx.AsyncClient,
+        airport: str,
+        begin: int,
+        end: int,
+    ) -> list[dict[str, Any]]:
+        """Get destination/arrival flights for an airport in a time range.
+
+        Args:
+            client: HTTP client instance
+            airport: ICAO airport code (destination)
+            begin: Begin timestamp (Unix epoch)
+            end: End timestamp (Unix epoch)
+
+        Returns:
+            List of flight dictionaries
+        """
+        url = f"{self.API_BASE}/flights/arrival"
+        params = f"?airport={airport}&begin={begin}&end={end}"
+
+        logger.debug(f"Fetching destinations for {airport} (begin={begin}, end={end})")
+        response = await self._rate_limited_request(client, url + params)
+        data = response.json()
+        logger.debug(f"Retrieved {len(data)} destination flights for {airport}")
         return data
 
     @staticmethod
-    def date_to_timestamps(flight_date: date) -> tuple[int, int]:
-        """Convert a date to begin/end Unix timestamps for that day (UTC).
+    def date_to_timestamps(
+        flight_date: date | datetime,
+        time_override: datetime | None = None,
+    ) -> tuple[int, int]:
+        """Convert a date or datetime to begin/end Unix timestamps (UTC).
+
+        If flight_date is a date, returns timestamps for the full day (00:00:00 to 23:59:59).
+        If flight_date is a datetime, returns timestamp for that exact moment.
+        If time_override is provided and flight_date is a date, uses the time from time_override.
 
         Args:
-            flight_date: Date to convert
+            flight_date: Date or datetime to convert
+            time_override: Optional datetime to use for time component when flight_date is a date
 
         Returns:
             Tuple of (begin_timestamp, end_timestamp)
         """
+        if isinstance(flight_date, datetime):
+            # If it's already a datetime, ensure it's UTC and use exact timestamp
+            if flight_date.tzinfo is None:
+                flight_dt = flight_date.replace(tzinfo=timezone.utc)
+            else:
+                flight_dt = flight_date.astimezone(timezone.utc)
+            ts = int(flight_dt.timestamp())
+            return ts, ts
+
+        # It's a date object
+        if time_override:
+            # Use time from override
+            if time_override.tzinfo is None:
+                time_override = time_override.replace(tzinfo=timezone.utc)
+            else:
+                time_override = time_override.astimezone(timezone.utc)
+            ts = int(time_override.timestamp())
+            return ts, ts
+
+        # Default: full day range
         begin_dt = datetime.combine(flight_date, datetime.min.time(), tzinfo=timezone.utc)
         end_dt = datetime.combine(flight_date, datetime.max.time(), tzinfo=timezone.utc)
 

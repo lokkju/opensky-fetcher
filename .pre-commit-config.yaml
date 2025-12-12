@@ -57,6 +57,9 @@ repos:
           - --check-return-types=False
           - --arg-type-hints-in-docstring=False
           - --check-class-attributes=False
+          - --skip-checking-short-docstrings=False
+          - --allow-init-docstring=True
+        exclude: ^tests/
 
   # Commitizen for commit message linting
   - repo: https://github.com/commitizen-tools/commitizen

@@ -26,9 +26,10 @@ class FlightDatabase:
             CREATE TABLE IF NOT EXISTS raw_responses (
                 airport VARCHAR NOT NULL,
                 date DATE NOT NULL,
+                flight_type VARCHAR NOT NULL,
                 request_timestamp TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
                 raw_json JSON NOT NULL,
-                PRIMARY KEY (airport, date)
+                PRIMARY KEY (airport, date, flight_type)
             )
         """)
 
@@ -37,6 +38,7 @@ class FlightDatabase:
             CREATE TABLE IF NOT EXISTS flights (
                 airport VARCHAR NOT NULL,
                 date DATE NOT NULL,
+                flight_type VARCHAR NOT NULL,
                 icao24 VARCHAR NOT NULL,
                 first_seen BIGINT NOT NULL,
                 last_seen BIGINT,
@@ -49,7 +51,7 @@ class FlightDatabase:
                 est_arrival_airport_vert_distance INTEGER,
                 departure_airport_candidates_count INTEGER,
                 arrival_airport_candidates_count INTEGER,
-                PRIMARY KEY (airport, date, icao24, first_seen)
+                PRIMARY KEY (airport, date, flight_type, icao24, first_seen)
             )
         """)
 
@@ -74,52 +76,58 @@ class FlightDatabase:
             ON flights(est_departure_airport)
         """)
 
-    def has_data(self, airport: str, flight_date: date) -> bool:
-        """Check if data already exists for a given airport and date.
+    def has_data(self, airport: str, flight_date: date, flight_type: str) -> bool:
+        """Check if data already exists for a given airport, date, and flight type.
 
         Args:
             airport: ICAO airport code
             flight_date: Date to check
+            flight_type: Type of flights ("departure" or "destination")
 
         Returns:
             True if data exists, False otherwise
         """
         result = self.conn.execute(
-            "SELECT COUNT(*) FROM raw_responses WHERE airport = ? AND date = ?",
-            [airport, flight_date],
+            "SELECT COUNT(*) FROM raw_responses WHERE airport = ? AND date = ? AND flight_type = ?",
+            [airport, flight_date, flight_type],
         ).fetchone()
         assert result is not None  # COUNT(*) always returns a result
         return result[0] > 0
 
-    def insert_raw_response(self, airport: str, flight_date: date, raw_json: str) -> None:
+    def insert_raw_response(
+        self, airport: str, flight_date: date, flight_type: str, raw_json: str
+    ) -> None:
         """Insert raw API response.
 
         Args:
             airport: ICAO airport code
             flight_date: Date of flights
+            flight_type: Type of flights ("departure" or "destination")
             raw_json: Raw JSON response from API
         """
         self.conn.execute(
             """
-            INSERT OR REPLACE INTO raw_responses (airport, date, raw_json)
-            VALUES (?, ?, ?)
+            INSERT OR REPLACE INTO raw_responses (airport, date, flight_type, raw_json)
+            VALUES (?, ?, ?, ?)
             """,
-            [airport, flight_date, raw_json],
+            [airport, flight_date, flight_type, raw_json],
         )
 
     def insert_flights(
-        self, airport: str, flight_date: date, flights: list[dict[str, Any]]
+        self, airport: str, flight_date: date, flight_type: str, flights: list[dict[str, Any]]
     ) -> None:
         """Insert parsed flight data.
 
         Args:
             airport: ICAO airport code
             flight_date: Date of flights
+            flight_type: Type of flights ("departure" or "destination")
             flights: List of flight dictionaries
         """
-        # First, delete any existing flights for this airport/date
+        # First, delete any existing flights for this airport/date/type
         self.conn.execute(
-            "DELETE FROM flights WHERE airport = ? AND date = ?", [airport, flight_date]
+            "DELETE FROM flights WHERE airport = ? AND date = ? AND flight_type = ?",
+            [airport, flight_date, flight_type],
         )
 
         # Insert new flight records
@@ -131,7 +139,7 @@ class FlightDatabase:
             self.conn.execute(
                 """
                 INSERT OR REPLACE INTO flights (
-                    airport, date, icao24, first_seen, last_seen,
+                    airport, date, flight_type, icao24, first_seen, last_seen,
                     est_departure_airport, est_arrival_airport, callsign,
                     est_departure_airport_horiz_distance,
                     est_departure_airport_vert_distance,
@@ -139,11 +147,12 @@ class FlightDatabase:
                     est_arrival_airport_vert_distance,
                     departure_airport_candidates_count,
                     arrival_airport_candidates_count
-                ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
                 """,
                 [
                     airport,
                     flight_date,
+                    flight_type,
                     flight.get("icao24"),
                     flight.get("firstSeen"),
                     flight.get("lastSeen"),
@@ -167,12 +176,22 @@ class FlightDatabase:
         """Close database connection."""
         self.conn.close()
 
-    def __enter__(self):
-        """Context manager entry."""
+    def __enter__(self) -> "FlightDatabase":
+        """Context manager entry.
+
+        Returns:
+            Self reference for use in with statement
+        """
         return self
 
-    def __exit__(self, exc_type, exc_val, exc_tb):
-        """Context manager exit."""
+    def __exit__(self, exc_type: Any, exc_val: Any, exc_tb: Any) -> None:
+        """Context manager exit.
+
+        Args:
+            exc_type: Exception type if an exception was raised
+            exc_val: Exception value if an exception was raised
+            exc_tb: Exception traceback if an exception was raised
+        """
         self.close()
 
     def export_to_csv(

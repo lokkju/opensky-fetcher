@@ -42,22 +42,61 @@ The tool has two main commands: `flights` (fetch data from API) and `export` (ex
 
 ### Fetching Flight Data
 
-Basic usage:
+The `flights` command has two subcommands: `departure` and `destination`.
+
+#### Fetch Departure Flights
+
+Fetch flights departing from specified airports:
 
 ```bash
-opensky-fetch flights -a KMCO -s 2024-01-01 -e 2024-01-31
+opensky-fetch flights departure -a KMCO -s 2024-01-01 -e 2024-01-31
 ```
 
 Multiple airports:
 
 ```bash
-opensky-fetch flights -a KMCO,KJFK,KLAX -s 2024-01-01 -e 2024-01-31
+opensky-fetch flights departure -a KMCO,KJFK,KLAX -s 2024-01-01 -e 2024-01-31
 ```
+
+#### Fetch Destination/Arrival Flights
+
+Fetch flights arriving at specified destination airports:
+
+```bash
+opensky-fetch flights destination -a KLAX -s 2024-01-01 -e 2024-01-31
+```
+
+Multiple destination airports:
+
+```bash
+opensky-fetch flights destination -a KLAX,KSFO,KSEA -s 2024-01-01 -e 2024-01-31
+```
+
+#### Using Datetime for Specific Time Ranges
+
+You can specify exact times instead of full days using datetime formats:
+
+```bash
+# Fetch flights between 10 AM and 3 PM on a specific day
+opensky-fetch flights departure -a KMCO -s "2024-01-01 10:00:00" -e "2024-01-01 15:00:00"
+
+# ISO 8601 format also supported
+opensky-fetch flights departure -a KMCO -s 2024-01-01T10:00:00 -e 2024-01-01T15:00:00
+
+# Multi-day with specific times (10 AM on Jan 1 to 3 PM on Jan 3)
+opensky-fetch flights departure -a KMCO -s "2024-01-01 10:00:00" -e "2024-01-03 15:00:00"
+```
+
+When using datetime:
+- For single day: fetches data for that exact time range
+- For multi-day: first day starts at specified time, last day ends at specified time, middle days are full days
+
+#### Advanced Options
 
 Custom database path and concurrency settings:
 
 ```bash
-opensky-fetch flights \
+opensky-fetch flights departure \
   -a KMCO \
   -s 2024-01-01 \
   -e 2024-01-31 \
@@ -70,20 +109,20 @@ With logging enabled:
 
 ```bash
 # Info level logging (shows progress and completion messages)
-opensky-fetch flights -a KMCO -s 2024-01-01 -e 2024-01-31 -v
+opensky-fetch flights departure -a KMCO -s 2024-01-01 -e 2024-01-31 -v
 
 # Debug level logging (shows all details including API requests and rate limiting)
-opensky-fetch flights -a KMCO -s 2024-01-01 -e 2024-01-31 -vv
+opensky-fetch flights departure -a KMCO -s 2024-01-01 -e 2024-01-31 -vv
 
 # Quiet mode (only shows progress bar if terminal is interactive)
-opensky-fetch flights -a KMCO -s 2024-01-01 -e 2024-01-31 -q
+opensky-fetch flights departure -a KMCO -s 2024-01-01 -e 2024-01-31 -q
 ```
 
 #### Flights Command Options
 
 - `-a, --airports`: Comma-separated list of ICAO airport codes (required, must be exactly 4 characters each)
-- `-s, --start-date`: Start date in YYYY-MM-DD format (required)
-- `-e, --end-date`: End date in YYYY-MM-DD format (required)
+- `-s, --start-date`: Start date/datetime (YYYY-MM-DD or 'YYYY-MM-DD HH:MM:SS') (required)
+- `-e, --end-date`: End date/datetime (YYYY-MM-DD or 'YYYY-MM-DD HH:MM:SS') (required)
 - `-d, --db-path`: Path to DuckDB database file (default: flights.duckdb)
 - `-c, --max-concurrent`: Maximum concurrent requests (default: 5)
 - `-r, --rate-limit-delay`: Minimum delay between requests in seconds (default: 0.5)
@@ -123,6 +162,9 @@ Filter by date range:
 
 ```bash
 opensky-fetch export january.csv -s 2024-01-01 -e 2024-01-31
+
+# Export specific time range
+opensky-fetch export morning_flights.csv -s "2024-01-01 06:00:00" -e "2024-01-01 12:00:00"
 ```
 
 Combine multiple filters:
@@ -143,8 +185,8 @@ opensky-fetch export mco_to_lax.parquet \
 - `-f, --format`: Output format: csv or parquet (default: csv)
 - `--departure-airports, --from`: Filter by departure airport codes (comma-separated)
 - `--arrival-airports, --to`: Filter by arrival airport codes (comma-separated)
-- `-s, --start-date`: Filter by start date in YYYY-MM-DD format
-- `-e, --end-date`: Filter by end date in YYYY-MM-DD format
+- `-s, --start-date`: Filter by start date/datetime (YYYY-MM-DD or 'YYYY-MM-DD HH:MM:SS')
+- `-e, --end-date`: Filter by end date/datetime (YYYY-MM-DD or 'YYYY-MM-DD HH:MM:SS')
 - `-v, --verbose`: Increase verbosity (use `-v` for info, `-vv` for debug)
 - `-q, --quiet`: Suppress all output
 
@@ -163,10 +205,10 @@ Airport codes must be exactly 4 characters (ICAO format). Invalid codes will gen
 
 ```bash
 # This will skip 'ABC' with a warning and only process KMCO and KJFK
-opensky-fetch flights -a KMCO,ABC,KJFK -s 2024-01-01 -e 2024-01-01
+opensky-fetch flights departure -a KMCO,ABC,KJFK -s 2024-01-01 -e 2024-01-01
 
 # Trailing commas are handled gracefully
-opensky-fetch flights -a KMCO, -s 2024-01-01 -e 2024-01-01
+opensky-fetch flights departure -a KMCO, -s 2024-01-01 -e 2024-01-01
 ```
 
 ## Database Schema

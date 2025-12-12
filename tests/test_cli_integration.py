@@ -36,6 +36,7 @@ class TestCLIIntegration:
                 cli,
                 [
                     "flights",
+                    "departure",
                     "-a",
                     "KMCO",
                     "-s",
@@ -54,6 +55,7 @@ class TestCLIIntegration:
             cli,
             [
                 "flights",
+                "departure",
                 "-a",
                 "ABC,XY",
                 "-s",
@@ -74,6 +76,7 @@ class TestCLIIntegration:
             cli,
             [
                 "flights",
+                "departure",
                 "-a",
                 "KMCO",
                 "-s",
@@ -94,6 +97,7 @@ class TestCLIIntegration:
             cli,
             [
                 "flights",
+                "departure",
                 "-a",
                 "KMCO,ABC",
                 "-s",
@@ -126,6 +130,7 @@ class TestCLILogging:
             cli,
             [
                 "flights",
+                "departure",
                 "-a",
                 "KMCO",
                 "-s",
@@ -146,6 +151,7 @@ class TestCLILogging:
             cli,
             [
                 "flights",
+                "departure",
                 "-a",
                 "KMCO",
                 "-s",
@@ -165,6 +171,7 @@ class TestCLILogging:
             cli,
             [
                 "flights",
+                "departure",
                 "-a",
                 "KMCO",
                 "-s",

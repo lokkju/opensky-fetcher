@@ -1,8 +1,9 @@
 """Tests for validation functions."""
 
-from datetime import date
+from datetime import date, datetime
 
 import pytest
+from click import ClickException
 
 from opensky_fetcher.cli import generate_date_range, parse_and_validate_airports, parse_date
 
@@ -15,14 +16,32 @@ class TestParseDate:
         result = parse_date("2024-01-15")
         assert result == date(2024, 1, 15)
 
+    def test_valid_datetime_with_t(self):
+        """Test parsing a valid datetime with T separator."""
+        result = parse_date("2024-01-15T10:30:00")
+        assert isinstance(result, datetime)
+        assert result == datetime(2024, 1, 15, 10, 30, 0)
+
+    def test_valid_datetime_with_space(self):
+        """Test parsing a valid datetime with space separator."""
+        result = parse_date("2024-01-15 10:30:00")
+        assert isinstance(result, datetime)
+        assert result == datetime(2024, 1, 15, 10, 30, 0)
+
+    def test_valid_datetime_with_seconds(self):
+        """Test parsing a datetime with full precision."""
+        result = parse_date("2024-01-15T14:25:33")
+        assert isinstance(result, datetime)
+        assert result == datetime(2024, 1, 15, 14, 25, 33)
+
     def test_invalid_date_format(self):
         """Test parsing an invalid date format."""
-        with pytest.raises(ValueError):
+        with pytest.raises(ClickException):
             parse_date("01/15/2024")
 
     def test_invalid_date_value(self):
         """Test parsing an invalid date value."""
-        with pytest.raises(ValueError):
+        with pytest.raises(ClickException):
             parse_date("2024-13-45")
 
 

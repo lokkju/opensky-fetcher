@@ -1,7 +1,7 @@
 """Tests for OpenSky API client."""
 
 import os
-from datetime import date
+from datetime import date, datetime, timezone
 
 import httpx
 import pytest
@@ -96,6 +96,37 @@ class TestOpenSkyClient:
 
         # End should be > begin
         assert end > begin
+
+    def test_date_to_timestamps_with_datetime(self):
+        """Test converting a datetime to timestamps."""
+        test_datetime = datetime(2024, 1, 1, 10, 30, 0, tzinfo=timezone.utc)
+        begin, end = OpenSkyClient.date_to_timestamps(test_datetime)
+
+        # Both should be the same exact timestamp
+        expected = 1704105000  # 2024-01-01 10:30:00 UTC
+        assert begin == expected
+        assert end == expected
+
+    def test_date_to_timestamps_with_datetime_no_tz(self):
+        """Test converting a naive datetime to timestamps (assumes UTC)."""
+        test_datetime = datetime(2024, 1, 1, 10, 30, 0)
+        begin, end = OpenSkyClient.date_to_timestamps(test_datetime)
+
+        # Should assume UTC
+        expected = 1704105000  # 2024-01-01 10:30:00 UTC
+        assert begin == expected
+        assert end == expected
+
+    def test_date_to_timestamps_with_time_override(self):
+        """Test using time_override parameter."""
+        test_date = date(2024, 1, 1)
+        override_time = datetime(2024, 1, 1, 15, 45, 0, tzinfo=timezone.utc)
+        begin, end = OpenSkyClient.date_to_timestamps(test_date, time_override=override_time)
+
+        # Should use the override time
+        expected = 1704123900  # 2024-01-01 15:45:00 UTC
+        assert begin == expected
+        assert end == expected
 
     def test_rate_limiting_parameters(self):
         """Test that rate limiting parameters are set correctly."""
