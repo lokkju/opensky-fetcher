@@ -17,13 +17,8 @@ A Python CLI tool to fetch and cache flight data from the OpenSky Network API fo
 Using uv:
 
 ```bash
-uv pip install -e .
-```
-
-Or install dependencies directly:
-
-```bash
-uv pip install click duckdb httpx tqdm python-dotenv
+uv sync
+uv run opensky-fetch
 ```
 
 ## Configuration
