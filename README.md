@@ -1,6 +1,6 @@
 # OpenSky Network Flight Data Fetcher
 
-A Python CLI tool to fetch departure flight data from the OpenSky Network API and store it in a DuckDB database.
+A Python CLI tool to fetch and cache flight data from the OpenSky Network API for further analysis
 
 ## Features
 
