@@ -28,7 +28,7 @@ uv pip install click duckdb httpx tqdm python-dotenv
 
 ## Configuration
 
-Set your OpenSky Network OAuth credentials as environment variables:
+Set your [OpenSky Network OAuth credentials](https://openskynetwork.github.io/opensky-api/rest.html#oauth2-client-credentials-flow) as environment variables:
 
 ```bash
 export OPENSKY_CLIENT_ID=your-client-id

@@ -1,0 +1,8 @@
+# VCR cassette test fixtures - these contain recorded HTTP interactions with redacted secrets
+tests/cassettes/TestOpenSkyClientAPI.test_get_token_caching.yaml:jwt:23
+tests/cassettes/TestOpenSkyClientAPI.test_get_token_caching.yaml:generic-api-key:3
+tests/cassettes/TestOpenSkyClientAPI.test_get_token.yaml:jwt:23
+tests/cassettes/TestOpenSkyClientAPI.test_get_token.yaml:generic-api-key:3
+tests/cassettes/TestOpenSkyClientAPI.test_get_departures.yaml:jwt:23
+tests/cassettes/TestOpenSkyClientAPI.test_get_departures.yaml:generic-api-key:3
+tests/cassettes/TestOpenSkyClientAPI.test_get_departures.yaml:generic-api-key:460
