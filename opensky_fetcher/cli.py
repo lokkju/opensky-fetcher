@@ -233,7 +233,13 @@ async def fetch_flights_async(
     logger.info("Done!")
 
 
-@click.command()
+@click.group()
+def cli() -> None:
+    """OpenSky Network flight data fetcher and exporter."""
+    pass
+
+
+@cli.command()
 @click.option(
     "--airports",
     "-a",
@@ -299,7 +305,7 @@ async def fetch_flights_async(
     is_flag=True,
     help="Suppress all output except progress bar (only shown if terminal is interactive).",
 )
-def main(
+def flights(
     airports: str,
     start_date: str,
     end_date: str,
@@ -314,8 +320,24 @@ def main(
 ) -> None:
     """Fetch OpenSky Network departure flight data for specified airports and date range.
 
+    Args:
+        airports: Comma-separated list of ICAO airport codes
+        start_date: Start date in YYYY-MM-DD format
+        end_date: End date in YYYY-MM-DD format
+        db_path: Path to DuckDB database file
+        client_id: OAuth client ID
+        client_secret: OAuth client secret
+        max_concurrent: Maximum number of concurrent requests
+        rate_limit_delay: Minimum delay between requests in seconds
+        no_skip_existing: Re-fetch data even if it already exists
+        verbose: Verbosity level (0=warnings, 1=info, 2=debug)
+        quiet: Suppress all output except progress bar
+
+    Raises:
+        click.ClickException: If credentials are missing, no valid airports, or invalid date range
+
     Example:
-        opensky-fetch -a KMCO,KJFK -s 2024-01-01 -e 2024-01-31
+        opensky-fetch flights -a KMCO,KJFK -s 2024-01-01 -e 2024-01-31
     """
     # Configure logging
     configure_logging(verbose, quiet)
@@ -360,5 +382,156 @@ def main(
     )
 
 
+@cli.command()
+@click.argument("output_file", type=click.Path())
+@click.option(
+    "--db-path",
+    "-d",
+    default="flights.duckdb",
+    help="Path to DuckDB database file (default: flights.duckdb)",
+)
+@click.option(
+    "--format",
+    "-f",
+    type=click.Choice(["csv", "parquet"], case_sensitive=False),
+    default="csv",
+    help="Output format: csv or parquet (default: csv)",
+)
+@click.option(
+    "--departure-airports",
+    "--from",
+    help="Filter by departure airport codes (comma-separated, e.g., KMCO,KJFK)",
+)
+@click.option(
+    "--arrival-airports",
+    "--to",
+    help="Filter by arrival airport codes (comma-separated, e.g., KLAX,KSFO)",
+)
+@click.option(
+    "--start-date",
+    "-s",
+    help="Filter by start date in YYYY-MM-DD format",
+)
+@click.option(
+    "--end-date",
+    "-e",
+    help="Filter by end date in YYYY-MM-DD format",
+)
+@click.option(
+    "--verbose",
+    "-v",
+    count=True,
+    help="Increase verbosity (use -v for info, -vv for debug). Default shows warnings and errors.",
+)
+@click.option(
+    "--quiet",
+    "-q",
+    is_flag=True,
+    help="Suppress all output.",
+)
+def export(
+    output_file: str,
+    db_path: str,
+    format: str,
+    departure_airports: str | None,
+    arrival_airports: str | None,
+    start_date: str | None,
+    end_date: str | None,
+    verbose: int,
+    quiet: bool,
+) -> None:
+    """Export flight data to CSV or Parquet file with optional filters.
+
+    Args:
+        output_file: Path to output file
+        db_path: Path to DuckDB database file
+        format: Output format (csv or parquet)
+        departure_airports: Filter by departure airport codes
+        arrival_airports: Filter by arrival airport codes
+        start_date: Filter by start date
+        end_date: Filter by end date
+        verbose: Verbosity level (0=warnings, 1=info, 2=debug)
+        quiet: Suppress all output
+
+    Raises:
+        click.ClickException: If database doesn't exist or export fails
+
+    Example:
+        opensky-fetch export flights.csv --format csv --from KMCO --to KLAX
+        opensky-fetch export flights.parquet -f parquet -s 2024-01-01 -e 2024-01-31
+    """
+    # Configure logging
+    configure_logging(verbose, quiet)
+
+    # Check if database exists
+    from pathlib import Path
+
+    if not Path(db_path).exists():
+        raise click.ClickException(f"Database file '{db_path}' does not exist")
+
+    # Parse optional filters
+    departure_list = None
+    if departure_airports:
+        departure_list = parse_and_validate_airports(departure_airports)
+        if not departure_list:
+            raise click.ClickException(
+                "No valid departure airport codes provided. "
+                "Airport codes must be exactly 4 characters."
+            )
+
+    arrival_list = None
+    if arrival_airports:
+        arrival_list = parse_and_validate_airports(arrival_airports)
+        if not arrival_list:
+            raise click.ClickException(
+                "No valid arrival airport codes provided. "
+                "Airport codes must be exactly 4 characters."
+            )
+
+    start = None
+    if start_date:
+        start = parse_date(start_date)
+
+    end = None
+    if end_date:
+        end = parse_date(end_date)
+
+    # Validate date range if both provided
+    if start and end and start > end:
+        raise click.ClickException("Start date must be before or equal to end date")
+
+    # Open database and export
+    db = FlightDatabase(db_path)
+
+    try:
+        logger.info(f"Exporting to {output_file} ({format.upper()})...")
+
+        if format.lower() == "csv":
+            row_count = db.export_to_csv(
+                output_file,
+                departure_airports=departure_list,
+                arrival_airports=arrival_list,
+                start_date=start,
+                end_date=end,
+            )
+        else:  # parquet
+            row_count = db.export_to_parquet(
+                output_file,
+                departure_airports=departure_list,
+                arrival_airports=arrival_list,
+                start_date=start,
+                end_date=end,
+            )
+
+        logger.info(f"Exported {row_count:,} rows to {output_file}")
+        if not quiet:
+            click.echo(f"Exported {row_count:,} rows to {output_file}")
+
+    except Exception as e:
+        raise click.ClickException(f"Export failed: {e}") from e
+    finally:
+        db.close()
+
+
 if __name__ == "__main__":
-    main()
+    cli()

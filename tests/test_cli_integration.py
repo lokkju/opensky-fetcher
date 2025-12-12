@@ -6,7 +6,7 @@ from unittest.mock import patch
 import pytest
 from click.testing import CliRunner
 
-from opensky_fetcher.cli import main
+from opensky_fetcher.cli import cli
 
 
 class TestCLIIntegration:
@@ -33,8 +33,9 @@ class TestCLIIntegration:
         """Test CLI fails with missing credentials."""
         with patch.dict(os.environ, {}, clear=True):
             result = runner.invoke(
-                main,
+                cli,
                 [
+                    "flights",
                     "-a",
                     "KMCO",
                     "-s",
@@ -50,8 +51,9 @@ class TestCLIIntegration:
     def test_cli_invalid_airport_codes(self, runner, mock_env, temp_db_path):
         """Test CLI handles invalid airport codes."""
         result = runner.invoke(
-            main,
+            cli,
             [
+                "flights",
                 "-a",
                 "ABC,XY",
                 "-s",
@@ -69,8 +71,9 @@ class TestCLIIntegration:
     def test_cli_invalid_date_range(self, runner, mock_env, temp_db_path):
         """Test CLI handles invalid date range."""
         result = runner.invoke(
-            main,
+            cli,
             [
+                "flights",
                 "-a",
                 "KMCO",
                 "-s",
@@ -88,8 +91,9 @@ class TestCLIIntegration:
     def test_cli_valid_airport_with_invalid(self, runner, mock_env, temp_db_path):
         """Test CLI skips invalid codes but processes valid ones."""
         result = runner.invoke(
-            main,
+            cli,
             [
+                "flights",
                 "-a",
                 "KMCO,ABC",
                 "-s",
@@ -119,8 +123,9 @@ class TestCLILogging:
         """Test quiet mode suppresses logging."""
         # This test just verifies the flag is accepted
         result = runner.invoke(
-            main,
+            cli,
             [
+                "flights",
                 "-a",
                 "KMCO",
                 "-s",
@@ -133,13 +138,14 @@ class TestCLILogging:
         )
 
         # Should show help without errors
-        assert "OpenSky Network departure flight data" in result.output
+        assert "Fetch OpenSky Network departure flight data" in result.output
 
     def test_verbose_mode(self, runner):
         """Test verbose mode is accepted."""
         result = runner.invoke(
-            main,
+            cli,
             [
+                "flights",
                 "-a",
                 "KMCO",
                 "-s",
@@ -151,13 +157,14 @@ class TestCLILogging:
             ],
         )
 
-        assert "OpenSky Network departure flight data" in result.output
+        assert "Fetch OpenSky Network departure flight data" in result.output
 
     def test_debug_mode(self, runner):
         """Test debug mode is accepted."""
         result = runner.invoke(
-            main,
+            cli,
             [
+                "flights",
                 "-a",
                 "KMCO",
                 "-s",
@@ -169,4 +176,4 @@ class TestCLILogging:
             ],
         )
 
-        assert "OpenSky Network departure flight data" in result.output
+        assert "Fetch OpenSky Network departure flight data" in result.output

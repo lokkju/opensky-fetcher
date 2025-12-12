@@ -13,7 +13,7 @@ dependencies = [
 ]
 
 [project.scripts]
-opensky-fetch = "opensky_fetcher.cli:main"
+opensky-fetch = "opensky_fetcher.cli:cli"
 
 [dependency-groups]
 dev = [

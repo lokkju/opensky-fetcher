@@ -37,6 +37,15 @@ repos:
     rev: v1.1.390
     hooks:
       - id: pyright
+        additional_dependencies:
+          - click>=8.1.0
+          - duckdb>=0.9.0
+          - httpx>=0.25.0
+          - tqdm>=4.66.0
+          - python-dotenv>=1.0.0
+          - loguru>=0.7.0
+          - pytest>=7.4.0
+          - pytest-asyncio>=0.21.0
 
   # Pydoclint for docstring linting
   - repo: https://github.com/jsh9/pydoclint
@@ -47,6 +56,7 @@ repos:
           - --style=google
           - --check-return-types=False
           - --arg-type-hints-in-docstring=False
+          - --check-class-attributes=False
 
   # Commitizen for commit message linting
   - repo: https://github.com/commitizen-tools/commitizen

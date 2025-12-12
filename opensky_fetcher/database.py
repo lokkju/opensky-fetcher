@@ -8,14 +8,13 @@ import duckdb
 
 
 class FlightDatabase:
-    """Manages DuckDB database for flight data storage."""
+    """Manages DuckDB database for flight data storage.
+
+    Args:
+        db_path: Path to the DuckDB database file
+    """
 
     def __init__(self, db_path: str = "flights.duckdb"):
-        """Initialize database connection and create schema.
-
-        Args:
-            db_path: Path to the DuckDB database file
-        """
         self.db_path = Path(db_path)
         self.conn = duckdb.connect(str(self.db_path))
         self._create_schema()
@@ -175,3 +174,120 @@ class FlightDatabase:
     def __exit__(self, exc_type, exc_val, exc_tb):
         """Context manager exit."""
         self.close()
+
+    def export_to_csv(
+        self,
+        output_path: str,
+        departure_airports: list[str] | None = None,
+        arrival_airports: list[str] | None = None,
+        start_date: date | None = None,
+        end_date: date | None = None,
+    ) -> int:
+        """Export flight data to CSV file.
+
+        Args:
+            output_path: Path to output CSV file
+            departure_airports: Filter by departure airport codes (optional)
+            arrival_airports: Filter by arrival airport codes (optional)
+            start_date: Filter by start date (optional)
+            end_date: Filter by end date (optional)
+
+        Returns:
+            Number of rows exported
+        """
+        query, params = self._build_export_query(
+            departure_airports, arrival_airports, start_date, end_date
+        )
+
+        # Export to CSV using DuckDB's native COPY command
+        # Note: query is built safely in _build_export_query with parameterized conditions
+        copy_query = f"COPY ({query}) TO ? WITH (HEADER, DELIMITER ',')"  # noqa: S608
+        self.conn.execute(copy_query, params + [output_path])
+
+        # Count rows
+        count_query = f"SELECT COUNT(*) FROM ({query})"  # noqa: S608
+        count_result = self.conn.execute(count_query, params).fetchone()
+        assert count_result is not None
+        return count_result[0]
+
+    def export_to_parquet(
+        self,
+        output_path: str,
+        departure_airports: list[str] | None = None,
+        arrival_airports: list[str] | None = None,
+        start_date: date | None = None,
+        end_date: date | None = None,
+    ) -> int:
+        """Export flight data to Parquet file.
+
+        Args:
+            output_path: Path to output Parquet file
+            departure_airports: Filter by departure airport codes (optional)
+            arrival_airports: Filter by arrival airport codes (optional)
+            start_date: Filter by start date (optional)
+            end_date: Filter by end date (optional)
+
+        Returns:
+            Number of rows exported
+        """
+        query, params = self._build_export_query(
+            departure_airports, arrival_airports, start_date, end_date
+        )
+
+        # Export to Parquet using DuckDB's native COPY command
+        # Note: query is built safely in _build_export_query with parameterized conditions
+        copy_query = f"COPY ({query}) TO ? (FORMAT PARQUET)"  # noqa: S608
+        self.conn.execute(copy_query, params + [output_path])
+
+        # Count rows
+        count_query = f"SELECT COUNT(*) FROM ({query})"  # noqa: S608
+        count_result = self.conn.execute(count_query, params).fetchone()
+        assert count_result is not None
+        return count_result[0]
+
+    def _build_export_query(
+        self,
+        departure_airports: list[str] | None = None,
+        arrival_airports: list[str] | None = None,
+        start_date: date | None = None,
+        end_date: date | None = None,
+    ) -> tuple[str, list]:
+        """Build SQL query for exporting flight data with filters.
+
+        Args:
+            departure_airports: Filter by departure airport codes (optional)
+            arrival_airports: Filter by arrival airport codes (optional)
+            start_date: Filter by start date (optional)
+            end_date: Filter by end date (optional)
+
+        Returns:
+            Tuple of (SQL query string, parameters list)
+        """
+        query = "SELECT * FROM flights"
+        conditions = []
+        params = []
+
+        if departure_airports:
+            placeholders = ",".join("?" * len(departure_airports))
+            conditions.append(f"airport IN ({placeholders})")
+            params.extend(departure_airports)
+
+        if arrival_airports:
+            placeholders = ",".join("?" * len(arrival_airports))
+            conditions.append(f"est_arrival_airport IN ({placeholders})")
+            params.extend(arrival_airports)
+
+        if start_date:
+            conditions.append("date >= ?")
+            params.append(start_date)
+
+        if end_date:
+            conditions.append("date <= ?")
+            params.append(end_date)
+
+        if conditions:
+            query += " WHERE " + " AND ".join(conditions)
+
+        query += " ORDER BY date, airport, first_seen"
+
+        return query, params

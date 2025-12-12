@@ -9,7 +9,14 @@ from loguru import logger
 
 
 class OpenSkyClient:
-    """Async HTTP client for OpenSky Network API with rate limiting."""
+    """Async HTTP client for OpenSky Network API with rate limiting.
+
+    Args:
+        client_id: OAuth client ID
+        client_secret: OAuth client secret
+        max_concurrent: Maximum number of concurrent requests
+        rate_limit_delay: Minimum delay between requests in seconds
+    """
 
     AUTH_URL = (
         "https://auth.opensky-network.org/auth/realms/opensky-network/protocol/openid-connect/token"
@@ -23,14 +30,6 @@ class OpenSkyClient:
         max_concurrent: int = 5,
         rate_limit_delay: float = 0.5,
     ):
-        """Initialize OpenSky API client.
-
-        Args:
-            client_id: OAuth client ID
-            client_secret: OAuth client secret
-            max_concurrent: Maximum number of concurrent requests
-            rate_limit_delay: Minimum delay between requests in seconds
-        """
         self.client_id = client_id
         self.client_secret = client_secret
         self.max_concurrent = max_concurrent

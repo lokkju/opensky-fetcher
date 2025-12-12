@@ -4,11 +4,10 @@ A Python CLI tool to fetch and cache flight data from the OpenSky Network API fo
 
 ## Features
 
-- Async HTTP requests with configurable rate limiting
-- OAuth2 authentication with token caching
-- Concurrent request limiting
+- **Fetch flight data**: Async HTTP requests with configurable rate limiting and OAuth2 authentication
+- **Export data**: Export to CSV or Parquet with flexible filtering options
+- Concurrent request limiting and automatic skip of already-fetched data
 - Progress tracking with tqdm
-- Automatic skip of already-fetched data
 - DuckDB storage with both raw JSON and parsed data tables
 - Indexed tables for efficient querying
 
@@ -39,22 +38,26 @@ cp .env.example .env
 
 ## Usage
 
+The tool has two main commands: `flights` (fetch data from API) and `export` (export data to files).
+
+### Fetching Flight Data
+
 Basic usage:
 
 ```bash
-opensky-fetch -a KMCO -s 2024-01-01 -e 2024-01-31
+opensky-fetch flights -a KMCO -s 2024-01-01 -e 2024-01-31
 ```
 
 Multiple airports:
 
 ```bash
-opensky-fetch -a KMCO,KJFK,KLAX -s 2024-01-01 -e 2024-01-31
+opensky-fetch flights -a KMCO,KJFK,KLAX -s 2024-01-01 -e 2024-01-31
 ```
 
 Custom database path and concurrency settings:
 
 ```bash
-opensky-fetch \
+opensky-fetch flights \
   -a KMCO \
   -s 2024-01-01 \
   -e 2024-01-31 \
@@ -67,16 +70,16 @@ With logging enabled:
 
 ```bash
 # Info level logging (shows progress and completion messages)
-opensky-fetch -a KMCO -s 2024-01-01 -e 2024-01-31 -v
+opensky-fetch flights -a KMCO -s 2024-01-01 -e 2024-01-31 -v
 
 # Debug level logging (shows all details including API requests and rate limiting)
-opensky-fetch -a KMCO -s 2024-01-01 -e 2024-01-31 -vv
+opensky-fetch flights -a KMCO -s 2024-01-01 -e 2024-01-31 -vv
 
 # Quiet mode (only shows progress bar if terminal is interactive)
-opensky-fetch -a KMCO -s 2024-01-01 -e 2024-01-31 -q
+opensky-fetch flights -a KMCO -s 2024-01-01 -e 2024-01-31 -q
 ```
 
-### Options
+#### Flights Command Options
 
 - `-a, --airports`: Comma-separated list of ICAO airport codes (required, must be exactly 4 characters each)
 - `-s, --start-date`: Start date in YYYY-MM-DD format (required)
@@ -89,6 +92,61 @@ opensky-fetch -a KMCO -s 2024-01-01 -e 2024-01-31 -q
 - `--no-skip-existing`: Re-fetch data even if it already exists in database
 - `--client-id`: OAuth client ID (or use OPENSKY_CLIENT_ID env var)
 - `--client-secret`: OAuth client secret (or use OPENSKY_CLIENT_SECRET env var)
+
+### Exporting Data
+
+Export all data to CSV:
+
+```bash
+opensky-fetch export flights.csv
+```
+
+Export to Parquet format:
+
+```bash
+opensky-fetch export flights.parquet -f parquet
+```
+
+Filter by departure airports:
+
+```bash
+opensky-fetch export mco_flights.csv --from KMCO
+```
+
+Filter by arrival airports:
+
+```bash
+opensky-fetch export west_coast.csv --to KLAX,KSFO,KSEA
+```
+
+Filter by date range:
+
+```bash
+opensky-fetch export january.csv -s 2024-01-01 -e 2024-01-31
+```
+
+Combine multiple filters:
+
+```bash
+opensky-fetch export mco_to_lax.parquet \
+  -f parquet \
+  --from KMCO \
+  --to KLAX \
+  -s 2024-01-01 \
+  -e 2024-01-31
+```
+
+#### Export Command Options
+
+- `OUTPUT_FILE`: Path to output file (required)
+- `-d, --db-path`: Path to DuckDB database file (default: flights.duckdb)
+- `-f, --format`: Output format: csv or parquet (default: csv)
+- `--departure-airports, --from`: Filter by departure airport codes (comma-separated)
+- `--arrival-airports, --to`: Filter by arrival airport codes (comma-separated)
+- `-s, --start-date`: Filter by start date in YYYY-MM-DD format
+- `-e, --end-date`: Filter by end date in YYYY-MM-DD format
+- `-v, --verbose`: Increase verbosity (use `-v` for info, `-vv` for debug)
+- `-q, --quiet`: Suppress all output
 
 ### Logging Levels
 
@@ -105,10 +163,10 @@ Airport codes must be exactly 4 characters (ICAO format). Invalid codes will gen
 
 ```bash
 # This will skip 'ABC' with a warning and only process KMCO and KJFK
-opensky-fetch -a KMCO,ABC,KJFK -s 2024-01-01 -e 2024-01-01
+opensky-fetch flights -a KMCO,ABC,KJFK -s 2024-01-01 -e 2024-01-01
 
 # Trailing commas are handled gracefully
-opensky-fetch -a KMCO, -s 2024-01-01 -e 2024-01-01
+opensky-fetch flights -a KMCO, -s 2024-01-01 -e 2024-01-01
 ```
 
 ## Database Schema
