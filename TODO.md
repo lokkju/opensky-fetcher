@@ -1,1 +1,3 @@
-- move to using dateparser for date/datetime argument parsing
+- move to using dateparser for date/datetime argument parsing, perhaps by creating a new project click-dateparser
+- add github actions: run pre-commit on push, deploy to pypi on release
+- add auto-versioning support via a pre-commit hook, perhaps as a new project?
