@@ -1,0 +1,74 @@
+[project]
+name = "opensky-fetcher"
+version = "0.1.0"
+description = "OpenSky Network flight data fetcher"
+requires-python = ">=3.10"
+dependencies = [
+    "click>=8.1.0",
+    "duckdb>=0.9.0",
+    "httpx>=0.25.0",
+    "tqdm>=4.66.0",
+    "python-dotenv>=1.0.0",
+    "loguru>=0.7.0",
+]
+
+[project.scripts]
+opensky-fetch = "opensky_fetcher.cli:main"
+
+[dependency-groups]
+dev = [
+    "pytest>=7.4.0",
+    "pytest-asyncio>=0.21.0",
+    "pytest-vcr>=1.0.2",
+    "vcrpy>=5.1.0",
+    "ruff>=0.8.0",
+    "bandit>=1.7.0",
+    "pyright>=1.1.0",
+    "pre-commit>=3.0.0",
+]
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+asyncio_mode = "auto"
+vcr_record_mode = "once"
+
+[tool.ruff]
+line-length = 100
+target-version = "py310"
+
+[tool.ruff.lint]
+select = [
+    "E",   # pycodestyle errors
+    "W",   # pycodestyle warnings
+    "F",   # pyflakes
+    "I",   # isort
+    "N",   # pep8-naming
+    "UP",  # pyupgrade
+    "B",   # flake8-bugbear
+    "C4",  # flake8-comprehensions
+    "S",   # flake8-bandit
+]
+ignore = [
+    "S101",  # Allow assert statements (used in tests)
+]
+
+[tool.ruff.lint.per-file-ignores]
+"tests/*" = ["S101"]  # Allow asserts in tests
+
+[tool.bandit]
+exclude_dirs = ["tests", ".venv"]
+skips = ["B101"]  # Skip assert_used check
+
+[tool.pyright]
+include = ["opensky_fetcher", "tests"]
+exclude = [".venv", "**/__pycache__"]
+pythonVersion = "3.10"
+typeCheckingMode = "basic"
+reportMissingTypeStubs = false
+reportUnknownMemberType = false
+reportUnknownArgumentType = false
+reportUnknownVariableType = false

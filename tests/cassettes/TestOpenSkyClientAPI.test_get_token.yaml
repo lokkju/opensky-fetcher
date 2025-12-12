@@ -1,0 +1,54 @@
+interactions:
+- request:
+    body: grant_type=client_credentials&client_id=lokkju-api-client&client_secret=2Rq233mdDelO45IZZ1teTcIChgVhqtB1
+    headers:
+      Accept:
+      - '*/*'
+      Accept-Encoding:
+      - gzip, deflate
+      Connection:
+      - keep-alive
+      Content-Length:
+      - '104'
+      Content-Type:
+      - application/x-www-form-urlencoded
+      Host:
+      - auth.opensky-network.org
+      User-Agent:
+      - python-httpx/0.28.1
+    method: POST
+    uri: https://auth.opensky-network.org/auth/realms/opensky-network/protocol/openid-connect/token
+  response:
+    body:
+      string: '{"access_token":"eyJhbGciOiJSUzI1NiIsInR5cCIgOiAiSldUIiwia2lkIiA6ICJ0SVIwSDB0bmNEZTlKYmp4dFctWEtqZ0RYSWExNnR5eU5DWHJxUzJQNkRjIn0.eyJleHAiOjE3NjU1NjQzOTMsImlhdCI6MTc2NTU2MjU5MywianRpIjoiYzY4YTUzYWYtOTViOS00Y2EzLWI1YzItMjA4YzA2ZWViYjJiIiwiaXNzIjoiaHR0cHM6Ly9hdXRoLm9wZW5za3ktbmV0d29yay5vcmcvYXV0aC9yZWFsbXMvb3BlbnNreS1uZXR3b3JrIiwiYXVkIjpbIndlYnNpdGUtdWkiLCJhY2NvdW50Il0sInN1YiI6IjhjYmUyOWU2LWFhMTctNGIxZC1iODdmLTc2MTI1MDc5Zjk0MyIsInR5cCI6IkJlYXJlciIsImF6cCI6Imxva2tqdS1hcGktY2xpZW50IiwiYWNyIjoiMSIsInJlYWxtX2FjY2VzcyI6eyJyb2xlcyI6WyJvZmZsaW5lX2FjY2VzcyIsIk9QRU5TS1lfQVBJX0RFRkFVTFQiLCJ1bWFfYXV0aG9yaXphdGlvbiIsImRlZmF1bHQtcm9sZXMtb3BlbnNreS1uZXR3b3JrIl19LCJyZXNvdXJjZV9hY2Nlc3MiOnsid2Vic2l0ZS11aSI6eyJyb2xlcyI6WyJvcGVuc2t5X3dlYnNpdGVfdXNlciJdfSwiYWNjb3VudCI6eyJyb2xlcyI6WyJtYW5hZ2UtYWNjb3VudCIsIm1hbmFnZS1hY2NvdW50LWxpbmtzIiwidmlldy1wcm9maWxlIl19fSwic2NvcGUiOiJwcm9maWxlIGVtYWlsIiwiY2xpZW50SG9zdCI6IjcxLjU5LjIzMS4yMjIiLCJlbWFpbF92ZXJpZmllZCI6ZmFsc2UsImNsaWVudElkIjoibG9ra2p1LWFwaS1jbGllbnQiLCJwcmVmZXJyZWRfdXNlcm5hbWUiOiJzZXJ2aWNlLWFjY291bnQtbG9ra2p1LWFwaS1jbGllbnQiLCJjbGllbnRBZGRyZXNzIjoiNzEuNTkuMjMxLjIyMiJ9.U-ZfZAYAOqHpv4ZCvdFI26cCPM-vnekvEVsW_zsTObS4SBjSCONKhkNwRbHRqqwS0iJeZxNgyITV0is9_ia_oXP8ZJsAeyU7-u6_8y2rtq_lRFSMl0sDCyeWeFE1BmM-5cqbQJ1Y9kZ0bYo591uwZTPBixxS0yibuM27gq9HsdZGPz7Wy2uD1-0craUPYT2ddzuZ6VQOH3FnSlB2BJxj1UVHerFeHeBY6R0hpCDJjn_BVQFSR6xpEMMXo9oFwFXWh0bW5UWwMaD6emhr_ov9yATHH758S8uRTZkajW81PduSDef2HlES4bb0OfW7uiIF3mYrOHTSrntjeEkE0zwAuQ","expires_in":1800,"refresh_expires_in":0,"token_type":"Bearer","not-before-policy":1649741894,"scope":"profile
+        email"}'
+    headers:
+      Cache-Control:
+      - no-store
+      Connection:
+      - keep-alive
+      Content-Length:
+      - '1572'
+      Content-Type:
+      - application/json
+      Date:
+      - Fri, 12 Dec 2025 18:03:13 GMT
+      Pragma:
+      - no-cache
+      Referrer-Policy:
+      - no-referrer
+      Set-Cookie:
+      - KC_RESTART=; Version=1; Expires=Thu, 01-Jan-1970 00:00:10 GMT; Max-Age=0;
+        Path=/auth/realms/opensky-network/; Secure; HttpOnly
+      Strict-Transport-Security:
+      - max-age=15724800; includeSubDomains
+      X-Content-Type-Options:
+      - nosniff
+      X-Frame-Options:
+      - ALLOW-FROM https://www.recaptcha.net
+      X-XSS-Protection:
+      - 1; mode=block
+    status:
+      code: 200
+      message: OK
+version: 1

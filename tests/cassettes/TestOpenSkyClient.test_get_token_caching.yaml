@@ -1,0 +1,50 @@
+interactions:
+- request:
+    body: grant_type=client_credentials&client_id=test-client-id&client_secret=test-client-secret
+    headers:
+      Accept:
+      - '*/*'
+      Accept-Encoding:
+      - gzip, deflate
+      Connection:
+      - keep-alive
+      Content-Length:
+      - '87'
+      Content-Type:
+      - application/x-www-form-urlencoded
+      Host:
+      - auth.opensky-network.org
+      User-Agent:
+      - python-httpx/0.28.1
+    method: POST
+    uri: https://auth.opensky-network.org/auth/realms/opensky-network/protocol/openid-connect/token
+  response:
+    body:
+      string: '{"error":"invalid_client","error_description":"Invalid client credentials"}'
+    headers:
+      Cache-Control:
+      - no-store
+      Connection:
+      - keep-alive
+      Content-Length:
+      - '75'
+      Content-Type:
+      - application/json
+      Date:
+      - Fri, 12 Dec 2025 18:02:11 GMT
+      Pragma:
+      - no-cache
+      Referrer-Policy:
+      - no-referrer
+      Strict-Transport-Security:
+      - max-age=15724800; includeSubDomains
+      X-Content-Type-Options:
+      - nosniff
+      X-Frame-Options:
+      - ALLOW-FROM https://www.recaptcha.net
+      X-XSS-Protection:
+      - 1; mode=block
+    status:
+      code: 400
+      message: Bad Request
+version: 1
