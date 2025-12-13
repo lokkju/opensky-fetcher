@@ -370,4 +370,5 @@ uv run ruff check . && uv run ruff format --check . && uv run bandit -r opensky_
 
 ## License
 
-MIT
+[Polyform Shield 1.0.0](https://polyformproject.org/licenses/shield/1.0.0)
+
