@@ -1,0 +1,22 @@
+name: Lint
+
+on: [push, pull_request]
+
+permissions:
+  contents: read
+
+jobs:
+  pre-commit:
+    name: Pre-commit checks (linting, formatting, type checking, secrets)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+      - name: Install Uv and set up Python
+        uses: astral-sh/setup-uv@v6
+        with:
+          activate-environment: true
+
+      - name: Install dependencies
+        run: uv sync --locked --all-extras --dev
+      - name: Run pre-commit hooks
+        run: uv run pre-commit run --all-files
