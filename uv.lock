@@ -267,6 +267,7 @@ dependencies = [
     { name = "duckdb" },
     { name = "httpx" },
     { name = "loguru" },
+    { name = "pre-commit" },
     { name = "python-dotenv" },
     { name = "tqdm" },
 ]
@@ -289,6 +290,7 @@ requires-dist = [
     { name = "duckdb", specifier = ">=0.9.0" },
     { name = "httpx", specifier = ">=0.25.0" },
     { name = "loguru", specifier = ">=0.7.0" },
+    { name = "pre-commit", specifier = ">=4.5.0" },
     { name = "python-dotenv", specifier = ">=1.0.0" },
     { name = "tqdm", specifier = ">=4.66.0" },
 ]

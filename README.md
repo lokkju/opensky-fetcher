@@ -279,10 +279,29 @@ LIMIT 10;
 
 ## Development
 
+### Getting Started
+
+Clone the repository:
+
+```bash
+git clone https://github.com/lokkju/opensky-fetcher.git
+cd opensky-fetcher
+```
+
 Install in development mode with dev dependencies:
 
 ```bash
 uv sync --group dev
+```
+
+Set up pre-commit hooks:
+
+```bash
+# Install pre-commit hooks (requires git repository)
+uv run pre-commit install --install-hooks
+
+# Install commit-msg hook for commitizen
+uv run pre-commit install --hook-type commit-msg
 ```
 
 ### Pre-commit Hooks
@@ -298,17 +317,7 @@ The project uses pre-commit to ensure code quality and catch issues before commi
 - **Actionlint**: GitHub Actions workflow linting
 - **UV**: Dependency lock file validation
 
-To set up pre-commit hooks:
-
-```bash
-# Install pre-commit hooks (requires git repository)
-uv run pre-commit install --install-hooks
-
-# Install commit-msg hook for commitizen
-uv run pre-commit install --hook-type commit-msg
-```
-
-To run pre-commit manually on all files:
+Run pre-commit manually on all files:
 
 ```bash
 # Run all hooks on all files
@@ -373,4 +382,3 @@ uv run ruff check . && uv run ruff format --check . && uv run bandit -r opensky_
 ## License
 
 [Polyform Shield 1.0.0](https://polyformproject.org/licenses/shield/1.0.0)
-
