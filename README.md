@@ -1,5 +1,7 @@
 # OpenSky Network Flight Data Fetcher
 
+[![License | PolyForm Shield 1.0.0](https://img.shields.io/badge/License-PolyForm--Shield--1.0.0-blue.svg)](https://polyformproject.org/licenses/shield/1.0.0/)
+
 A Python CLI tool to fetch and cache flight data from the OpenSky Network API for further analysis
 
 ## Features
